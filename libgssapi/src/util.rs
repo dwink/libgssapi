@@ -2,12 +2,20 @@ use bytes;
 use libgssapi_sys::{
     gss_buffer_desc, gss_buffer_desc_struct, gss_buffer_t, gss_iov_buffer_desc,
     gss_release_buffer, size_t, OM_uint32, GSS_IOV_BUFFER_FLAG_ALLOCATE,
-    GSS_IOV_BUFFER_FLAG_ALLOCATED, GSS_IOV_BUFFER_FLAG_MASK, GSS_IOV_BUFFER_TYPE_DATA,
+    GSS_IOV_BUFFER_FLAG_ALLOCATED,  GSS_IOV_BUFFER_TYPE_DATA,
     GSS_IOV_BUFFER_TYPE_EMPTY, GSS_IOV_BUFFER_TYPE_HEADER,
-    GSS_IOV_BUFFER_TYPE_MECH_PARAMS, GSS_IOV_BUFFER_TYPE_MIC_TOKEN,
+    GSS_IOV_BUFFER_TYPE_MECH_PARAMS,
     GSS_IOV_BUFFER_TYPE_PADDING, GSS_IOV_BUFFER_TYPE_SIGN_ONLY,
     GSS_IOV_BUFFER_TYPE_STREAM, GSS_IOV_BUFFER_TYPE_TRAILER, GSS_S_COMPLETE,
 };
+#[cfg(not(target_os = "macos"))]
+use libgssapi_sys::{
+    GSS_IOV_BUFFER_FLAG_MASK,
+    GSS_IOV_BUFFER_TYPE_MIC_TOKEN
+};
+#[cfg(target_os = "macos")]
+use libgssapi_sys::GSS_IOV_BUFFER_TYPE_FLAG_MASK as GSS_IOV_BUFFER_FLAG_MASK;
+
 use std::{
     ffi,
     marker::PhantomData,
@@ -61,6 +69,7 @@ pub enum GssIovType {
     Padding,
     Stream,
     SignOnly,
+    #[cfg(target_ios = "macos")]
     MicToken,
 }
 
@@ -75,6 +84,7 @@ impl GssIovType {
             GssIovType::Padding => GSS_IOV_BUFFER_TYPE_PADDING,
             GssIovType::Stream => GSS_IOV_BUFFER_TYPE_STREAM,
             GssIovType::SignOnly => GSS_IOV_BUFFER_TYPE_SIGN_ONLY,
+            #[cfg(target_ios = "macos")]
             GssIovType::MicToken => GSS_IOV_BUFFER_TYPE_MIC_TOKEN,
         }
     }
@@ -89,6 +99,7 @@ impl GssIovType {
             GSS_IOV_BUFFER_TYPE_PADDING => Some(GssIovType::Padding),
             GSS_IOV_BUFFER_TYPE_STREAM => Some(GssIovType::Stream),
             GSS_IOV_BUFFER_TYPE_SIGN_ONLY => Some(GssIovType::SignOnly),
+            #[cfg(target_ios = "macos")]
             GSS_IOV_BUFFER_TYPE_MIC_TOKEN => Some(GssIovType::MicToken),
             _ => None,
         }

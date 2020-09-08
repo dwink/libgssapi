@@ -112,7 +112,8 @@ apparantly isn't that evil, but some other implementation might be. So
 if that happens I guess file a bug.
 */
 /// An Oid. Did I mention I hate OIDs.
-#[repr(C)]
+#[cfg_attr(target_os = "macos", repr(C, packed(2)))]
+#[cfg_attr(target_os = "linux", repr(C))]
 #[derive(Clone, Copy)]
 pub struct Oid {
     length: u32,
